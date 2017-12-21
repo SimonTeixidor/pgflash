@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import random
 import itertools
+import sys
 
 def sql_generator(insert, vals):
     yield insert
@@ -17,8 +18,7 @@ card_insert = sql_generator("insert into card(front,back,bucket,deck_owner, deck
         (("('front" + str(i) + "', 'back3'," + str(random.randint(10000,1000000))+", 'sp',"
             + str(random.randint(1,9999))+")" for i in range(0, 10000))))
 
-with open("testdata.sql", "w") as f:
-    f.writelines(itertools.chain(
-        ["drop role sp; insert into flash_card_user(name,pass) values('sp','1');"], 
-        deck_insert,
-        card_insert))
+sys.stdout.writelines(itertools.chain(
+    ["drop role sp; insert into flash_card_user(name,pass) values('sp','1');"], 
+    deck_insert,
+    card_insert))
