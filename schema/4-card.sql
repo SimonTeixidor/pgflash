@@ -11,6 +11,8 @@ CREATE TABLE card(
 	PRIMARY KEY (front, back, deck_owner, deck_name),
 	FOREIGN KEY (deck_owner, deck_name) REFERENCES deck(owner, name));
 
+CREATE INDEX card_deck ON card(deck_owner, deck_name);
+
 CREATE FUNCTION increment_bucket_count()
 RETURNS TRIGGER
 LANGUAGE plpgsql

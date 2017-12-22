@@ -12,13 +12,15 @@ def sql_generator(insert, vals):
     yield ';'
 
 
+users = ["s"+str(i) for i in range(0,100)]
+decks = [(i, str(j)) for i in users for j in range(0,10)]
+user_inserts = ("drop role " + i + "; insert into flash_card_user(name,pass) values ('"+i+"','1234');" for i in users)
 deck_insert = sql_generator("insert into deck(owner, name) values ", 
-        ("('sp','"+str(i)+"')" for i in range(1,10000)))
+        ("('{}', '{}')".format(i,j) for i,j in decks))
 card_insert = sql_generator("insert into card(front,back,bucket,deck_owner, deck_name) values ",
-        (("('front" + str(i) + "', 'back3'," + str(random.randint(10000,1000000))+", 'sp',"
-            + str(random.randint(1,9999))+")" for i in range(0, 10000))))
+        (("('front{}', 'back3',{}, '{}','{}')".format(i,random.randint(1,100),j,k) for i in range(0, 100) for j,k in decks)))
 
 sys.stdout.writelines(itertools.chain(
-    ["drop role sp; insert into flash_card_user(name,pass) values('sp','1');"], 
-    deck_insert,
-    card_insert))
+            user_inserts,
+            deck_insert,
+            card_insert))
