@@ -56,3 +56,8 @@ CREATE TRIGGER bucket_count_update_old
 BEFORE UPDATE on card
 FOR EACH ROW
 EXECUTE PROCEDURE decrement_bucket_count();
+
+ALTER TABLE card ENABLE ROW LEVEL SECURITY;
+CREATE POLICY card_policy ON card
+USING (deck_owner = current_user)
+WITH CHECK (deck_owner = current_user);

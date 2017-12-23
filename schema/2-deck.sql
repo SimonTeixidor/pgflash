@@ -6,6 +6,7 @@ CREATE TABLE deck(
 	public BOOLEAN DEFAULT FALSE NOT NULL,
 	PRIMARY KEY (owner, name));
 
+ALTER TABLE deck ENABLE ROW LEVEL SECURITY;
 CREATE POLICY deck_policy ON deck
 USING (owner = current_user OR public)
 WITH CHECK (owner = current_user);

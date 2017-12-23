@@ -30,6 +30,8 @@ LANGUAGE plpgsql
 as $$
   BEGIN
     EXECUTE 'CREATE ROLE ' || quote_ident(new.name);
+    EXECUTE 'GRANT SELECT ON deck TO ' || quote_ident(new.name);
+    EXECUTE 'GRANT SELECT ON next_card TO ' || quote_ident(new.name);
     RETURN new;
   END
 $$;
