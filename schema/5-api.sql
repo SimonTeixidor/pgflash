@@ -22,16 +22,12 @@ SELECT * FROM full_bucket
 UNION ALL 
 SELECT * FROM smallest_bucket_with_no_full;
 		
--- The next card is either the first card in the overflowing
--- largest overflowing bucket, or a random card.
 CREATE VIEW next_card AS
-SELECT DISTINCT ON (c.deck_owner,c.deck_name) c.front,c.back,c.deck_owner,c.deck_name,c.bucket FROM (
-  (
-    (SELECT 1 AS sort_nr, c.* FROM card c INNER JOIN next_bucket nb ON nb.deck_owner = c.deck_owner AND nb.deck_name = c.deck_name AND nb.bucket = c.bucket order by c.front)
-    UNION ALL
-    (SELECT 2 AS sort_nr, c.* FROM card c ORDER BY (c.bucket,c.front))
-  ) ORDER BY sort_nr
-) as c where c.deck_owner = CURRENT_ROLE;
+SELECT DISTINCT ON (c.deck_owner, c.deck_name) c.front,c.back,c.deck_owner,c.deck_name,c.bucket
+FROM card c 
+INNER JOIN next_bucket nb 
+ON nb.deck_owner = c.deck_owner AND nb.deck_name = c.deck_name AND nb.bucket = c.bucket
+WHERE c.deck_owner = CURRENT_ROLE;
 
 -- Anon user can read all public decks.
 CREATE ROLE web_anon NOLOGIN;
