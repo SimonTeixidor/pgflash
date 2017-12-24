@@ -1,6 +1,6 @@
-DROP ROLE IF EXISTS web_anon;
 DROP VIEW IF EXISTS next_bucket;
-DROP VIEW IF EXISTS next_card;
+DROP VIEW IF EXISTS full_bucket;
+DROP VIEW IF EXISTS smallest_bucket_with_no_full;
 
 -- If there are many full buckets, we start from the largest bucket.
 CREATE VIEW full_bucket AS
@@ -21,15 +21,3 @@ CREATE VIEW next_bucket AS
 SELECT * FROM full_bucket 
 UNION ALL 
 SELECT * FROM smallest_bucket_with_no_full;
-		
-CREATE VIEW next_card AS
-SELECT DISTINCT ON (c.deck_owner, c.deck_name) c.front,c.back,c.deck_owner,c.deck_name,c.bucket
-FROM card c 
-INNER JOIN next_bucket nb 
-ON nb.deck_owner = c.deck_owner AND nb.deck_name = c.deck_name AND nb.bucket = c.bucket
-WHERE c.deck_owner = CURRENT_ROLE;
-
--- Anon user can read all public decks.
-CREATE ROLE web_anon NOLOGIN;
-GRANT web_anon TO postgres;
-GRANT SELECT ON deck TO web_anon;
