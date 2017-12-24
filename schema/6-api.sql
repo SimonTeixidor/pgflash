@@ -11,15 +11,14 @@ WHERE c.deck_owner = CURRENT_ROLE;
 
 CREATE TYPE answer_enum AS ENUM ('remembered', 'not_remembered');
 
-CREATE FUNCTION card_answer(f TEXT, b TEXT, dow TEXT, dn TEXT, a answer_enum) 
+CREATE FUNCTION card_answer(f TEXT, b TEXT, dn TEXT, a answer_enum) 
 RETURNS void
 LANGUAGE plpgsql
 AS $$
   BEGIN
     UPDATE card
     SET bucket = CASE WHEN a = 'remembered' THEN bucket + 1 ELSE 0 END
-    WHERE front = f AND back = b AND deck_owner = dow AND deck_name = dn
-      AND dow = current_role;
+    WHERE front = f AND back = b AND deck_owner = CURRENT_ROLE AND deck_name = dn;
   END;
 $$;
     

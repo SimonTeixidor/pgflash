@@ -6,3 +6,8 @@ CREATE TABLE bucket_count(
 	bucket INT NOT NULL,
 	count INT NOT NULL,
 	PRIMARY KEY (deck_owner, deck_name, bucket));
+
+ALTER TABLE bucket_count ENABLE ROW LEVEL SECURITY;
+CREATE POLICY bucket_policy ON bucket_count
+USING (deck_owner = current_user)
+WITH CHECK (deck_owner = current_user);

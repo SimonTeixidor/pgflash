@@ -32,6 +32,10 @@ as $$
     EXECUTE 'CREATE ROLE ' || quote_ident(new.name);
     EXECUTE 'GRANT SELECT ON deck TO ' || quote_ident(new.name);
     EXECUTE 'GRANT SELECT ON next_card TO ' || quote_ident(new.name);
+    EXECUTE 'GRANT EXECUTE ON FUNCTION card_answer(TEXT, TEXT, TEXT, answer_enum) TO ' 
+      || quote_ident(new.name);
+    EXECUTE 'GRANT ALL ON card TO ' || quote_ident(new.name);
+    EXECUTE 'GRANT ALL ON bucket_count TO ' || quote_ident(new.name);
     RETURN new;
   END
 $$;
