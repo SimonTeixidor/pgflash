@@ -2,16 +2,16 @@ DROP TABLE IF EXISTS card CASCADE;
 DROP FUNCTION increment_bucket_count();
 DROP FUNCTION decrement_bucket_count();
 
-CREATE TABLE card(
+CREATE TABLE pub.card(
        	front TEXT NOT NULL, 
 	back TEXT NOT NULL,
 	bucket INT NOT NULL,
 	deck_owner NAME NOT NULL,
 	deck_name TEXT NOT NULL,
 	PRIMARY KEY (front, back, deck_owner, deck_name),
-	FOREIGN KEY (deck_owner, deck_name) REFERENCES deck(owner, name));
+	FOREIGN KEY (deck_owner, deck_name) REFERENCES pub.deck(owner, name));
 
-CREATE INDEX card_deck ON card(deck_owner, deck_name);
+CREATE INDEX card_deck ON pub.card(deck_owner, deck_name);
 
 CREATE FUNCTION increment_bucket_count()
 RETURNS TRIGGER
@@ -48,16 +48,16 @@ AS $$
 $$;
 
 CREATE TRIGGER bucket_count_update_new
-BEFORE INSERT OR UPDATE on card
+BEFORE INSERT OR UPDATE on pub.card
 FOR EACH ROW
 EXECUTE PROCEDURE increment_bucket_count();
 
 CREATE TRIGGER bucket_count_update_old
-BEFORE UPDATE on card
+BEFORE UPDATE on pub.card
 FOR EACH ROW
 EXECUTE PROCEDURE decrement_bucket_count();
 
-ALTER TABLE card ENABLE ROW LEVEL SECURITY;
-CREATE POLICY card_policy ON card
+ALTER TABLE pub.card ENABLE ROW LEVEL SECURITY;
+CREATE POLICY card_policy ON pub.card
 USING (deck_owner = current_user)
 WITH CHECK (deck_owner = current_user);
