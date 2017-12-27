@@ -26,6 +26,9 @@ errorDiv model =
         Answer { error } ->
             Maybe.map (\e -> div [ class "error-div" ] [ h3 [] [ text e ] ]) error
 
+        ShowAnswer { error } ->
+            Maybe.map (\e -> div [ class "error-div" ] [ h3 [] [ text e ] ]) error
+
 
 deckListDiv : Model -> Maybe (Html Msg)
 deckListDiv model =
@@ -65,13 +68,35 @@ cardDiv : Model -> Maybe (Html Msg)
 cardDiv model =
     case model of
         Answer { card, answer } ->
-            div
-                [ id "card" ]
-                [ h3 [ id "card-front" ] [ text card.front ]
+            div [ id "card" ]
+                [ div [ class "card-side" ]
+                    [ p [] [ text "Front" ]
+                    , h3 [ id "card-front" ] [ text card.front ]
+                    ]
                 , form [ onSubmit CardAnswer ]
-                    [ input [ placeholder "Answer", onInput CardAnswerInput, value answer ] []
+                    [ input
+                        [ placeholder "Answer"
+                        , onInput CardAnswerInput
+                        , value answer
+                        ]
+                        []
                     , button [] [ text "Submit" ]
                     ]
+                ]
+                |> Just
+
+        ShowAnswer { card, answer } ->
+            div [ id "card" ]
+                [ div [ class "card-side" ]
+                    [ p [] [ text "Front" ]
+                    , h3 [ id "card-front" ] [ text card.front ]
+                    ]
+                , div [ class "card-side" ]
+                    [ p [] [ text "Back" ]
+                    , h3 [ id "card-back" ] [ text card.back ]
+                    ]
+                , form [ onSubmit NewCardRequest ]
+                    [ button [] [ text "Next Card" ] ]
                 ]
                 |> Just
 

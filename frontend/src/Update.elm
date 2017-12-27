@@ -1,7 +1,6 @@
 module Update exposing (update)
 
 import Date
-import Debug
 import Http
 import Model exposing (Model(..))
 import Msg exposing (Msg(..))
@@ -63,21 +62,39 @@ update msg m =
         Answer ({ card, answer, token } as model) ->
             case msg of
                 CardAnswer ->
-                    ( Answer { model | answer = "" }
+                    ( ShowAnswer model
                     , sendCardAnswer token card (model.answer == card.back)
                     )
 
                 CardAnswerInput s ->
                     ( Answer { model | answer = s }, Cmd.none )
 
-                CardAnswerResponse (Ok _) ->
-                    ( Answer model, getCard token card.deck_name )
-
-                CardAnswerResponse (Err e) ->
-                    ( Answer { model | error = Just <| httpErrorString e }, Cmd.none )
-
                 _ ->
                     ( Answer model, Cmd.none )
+
+        ShowAnswer ({ token, card } as model) ->
+            case msg of
+                NewCard (Ok (c :: _)) ->
+                    ( Answer { model | answer = "", card = c }
+                    , Cmd.none
+                    )
+
+                NewCard (Ok []) ->
+                    ( Answer { model | error = Just "Couldn't find any cards in deck." }, Cmd.none )
+
+                NewCard (Err e) ->
+                    ( Answer { model | error = Just <| httpErrorString e }, Cmd.none )
+
+                NewCardRequest ->
+                    ( ShowAnswer model
+                    , getCard token card.deck_name
+                    )
+
+                CardAnswerResponse (Err e) ->
+                    ( ShowAnswer { model | error = Just <| httpErrorString e }, Cmd.none )
+
+                _ ->
+                    ( ShowAnswer model, Cmd.none )
 
 
 httpErrorString : Http.Error -> String

@@ -1,7 +1,6 @@
 module Tasks exposing (getCard, getDecks, sendCardAnswer, sendLogin)
 
 import Conf exposing (baseUrl)
-import Debug
 import Http
 import Json.Decode as JsonD
 import Json.Encode as JsonE
@@ -45,7 +44,7 @@ getCard token deck =
     Http.request
         { method = "GET"
         , headers = [ Http.header "Authorization" ("Bearer " ++ token) ]
-        , url = Debug.log "url" url
+        , url = url
         , body = Http.emptyBody
         , expect = Http.expectJson (JsonD.list cardDecoder)
         , timeout = Nothing

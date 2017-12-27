@@ -21,6 +21,7 @@ type Model
     = NotLoggedIn { error : Maybe String, username : String, password : String }
     | DeckChoice { error : Maybe String, token : String, decks : List Deck }
     | Answer { error : Maybe String, token : String, card : Card, answer : String }
+    | ShowAnswer { error : Maybe String, token : String, card : Card, answer : String }
 
 
 initialState : Model
