@@ -3,41 +3,81 @@ module Update exposing (update)
 import Date
 import Debug
 import Http
-import Model exposing (Model)
+import Model exposing (Model(..))
 import Msg exposing (Msg(..))
-import Tasks exposing (getDecks, sendLogin)
+import Tasks exposing (getCard, getDecks, sendCardAnswer, sendLogin)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        DeckList (Err e) ->
-            ( { model | error = Just <| httpErrorString e }, Cmd.none )
+update msg m =
+    case m of
+        NotLoggedIn ({ username, password } as model) ->
+            case msg of
+                UsernameInput s ->
+                    ( NotLoggedIn { model | username = s }, Cmd.none )
 
-        DeckList (Ok lst) ->
-            Debug.log "New decks"
-                ( { model | decks = lst }, Cmd.none )
+                PasswordInput s ->
+                    ( NotLoggedIn { model | password = s }, Cmd.none )
 
-        ChangeDeck s ->
-            ( { model | deck = model.decks |> List.filter (\d -> d.name == s) |> List.head }, Cmd.none )
+                LoginFormSubmit ->
+                    ( NotLoggedIn { model | password = "" }
+                    , sendLogin username password
+                    )
 
-        NewCard c ->
-            ( model, Cmd.none )
+                NewToken (Ok s) ->
+                    ( DeckChoice { error = Nothing, token = s, decks = [] }
+                    , getDecks s
+                    )
 
-        NewToken (Ok s) ->
-            ( { model | token = Just s }, getDecks s )
+                NewToken (Err e) ->
+                    ( NotLoggedIn { model | error = Just <| httpErrorString e }, Cmd.none )
 
-        NewToken (Err e) ->
-            ( { model | error = Just <| httpErrorString e }, Cmd.none )
+                _ ->
+                    ( NotLoggedIn model, Cmd.none )
 
-        LoginFormSubmit ->
-            ( { model | password = "" }, sendLogin model.username model.password )
+        DeckChoice ({ decks, token } as model) ->
+            case msg of
+                DeckList (Ok lst) ->
+                    ( DeckChoice { model | decks = lst }, Cmd.none )
 
-        UsernameInput s ->
-            ( { model | username = s }, Cmd.none )
+                DeckList (Err e) ->
+                    ( DeckChoice { model | error = Just <| httpErrorString e }, Cmd.none )
 
-        PasswordInput s ->
-            ( { model | password = s }, Cmd.none )
+                ChangeDeck s ->
+                    ( DeckChoice model, getCard token s )
+
+                NewCard (Ok (c :: _)) ->
+                    ( Answer { error = Nothing, card = c, answer = "", token = token }
+                    , Cmd.none
+                    )
+
+                NewCard (Ok []) ->
+                    ( DeckChoice { model | error = Just "Couldn't find any cards in deck." }, Cmd.none )
+
+                NewCard (Err e) ->
+                    ( DeckChoice { model | error = Just <| httpErrorString e }, Cmd.none )
+
+                _ ->
+                    ( DeckChoice model, Cmd.none )
+
+        Answer ({ card, answer, token } as model) ->
+            case msg of
+                CardAnswer ->
+                    ( Answer { model | answer = "" }
+                    , sendCardAnswer token card (model.answer == card.back)
+                    )
+
+                CardAnswerInput s ->
+                    ( Answer { model | answer = s }, Cmd.none )
+
+                CardAnswerResponse (Ok _) ->
+                    ( Answer model, getCard token card.deck_name )
+
+                CardAnswerResponse (Err e) ->
+                    ( Answer { model | error = Just <| httpErrorString e }, Cmd.none )
+
+                _ ->
+                    ( Answer model, Cmd.none )
 
 
 httpErrorString : Http.Error -> String

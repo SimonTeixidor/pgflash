@@ -1,11 +1,13 @@
-module Tasks exposing (getDecks, sendLogin)
+module Tasks exposing (getCard, getDecks, sendCardAnswer, sendLogin)
 
 import Conf exposing (baseUrl)
+import Debug
 import Http
 import Json.Decode as JsonD
 import Json.Encode as JsonE
-import Model exposing (cardDecoder, deckDecoder)
+import Model exposing (Card, Deck, cardDecoder, deckDecoder)
 import Msg exposing (Msg(..))
+import QueryString as QS
 
 
 sendLogin : String -> String -> Cmd Msg
@@ -32,3 +34,49 @@ getDecks token =
         , withCredentials = False
         }
         |> Http.send DeckList
+
+
+getCard : String -> String -> Cmd Msg
+getCard token deck =
+    let
+        url =
+            baseUrl ++ "/next_card" ++ (QS.render <| QS.add "deck_name" ("eq." ++ deck) QS.empty)
+    in
+    Http.request
+        { method = "GET"
+        , headers = [ Http.header "Authorization" ("Bearer " ++ token) ]
+        , url = Debug.log "url" url
+        , body = Http.emptyBody
+        , expect = Http.expectJson (JsonD.list cardDecoder)
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.send NewCard
+
+
+sendCardAnswer : String -> Card -> Bool -> Cmd Msg
+sendCardAnswer token card remembered =
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Authorization" ("Bearer " ++ token) ]
+        , url = baseUrl ++ "/rpc/card_answer"
+        , body =
+            Http.jsonBody
+                (JsonE.object
+                    [ ( "f", JsonE.string card.front )
+                    , ( "b", JsonE.string card.back )
+                    , ( "dn", JsonE.string card.deck_name )
+                    , ( "a"
+                      , JsonE.string <|
+                            if remembered then
+                                "remembered"
+                            else
+                                "not_remembered"
+                      )
+                    ]
+                )
+        , expect = Http.expectJson JsonD.string
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.send CardAnswerResponse

@@ -1,4 +1,4 @@
-module Model exposing (Card, Deck, Model, cardDecoder, deckDecoder, initialState)
+module Model exposing (Card, Deck, Model(..), cardDecoder, deckDecoder, initialState)
 
 import Json.Decode exposing (..)
 
@@ -17,25 +17,15 @@ type alias Deck =
     }
 
 
-type alias Model =
-    { deck : Maybe Deck
-    , decks : List Deck
-    , token : Maybe String
-    , error : Maybe String
-    , username : String
-    , password : String
-    }
+type Model
+    = NotLoggedIn { error : Maybe String, username : String, password : String }
+    | DeckChoice { error : Maybe String, token : String, decks : List Deck }
+    | Answer { error : Maybe String, token : String, card : Card, answer : String }
 
 
 initialState : Model
 initialState =
-    { deck = Nothing
-    , decks = []
-    , token = Nothing
-    , error = Nothing
-    , username = ""
-    , password = ""
-    }
+    NotLoggedIn { error = Nothing, username = "", password = "" }
 
 
 cardDecoder : Decoder Card

@@ -7,8 +7,11 @@ import Model exposing (Card, Deck)
 type Msg
     = DeckList (Result Http.Error (List Deck))
     | ChangeDeck String
-    | NewCard Card
+    | NewCard (Result Http.Error (List Card))
     | NewToken (Result Http.Error String)
     | LoginFormSubmit
     | UsernameInput String
     | PasswordInput String
+    | CardAnswer
+    | CardAnswerInput String
+    | CardAnswerResponse (Result Http.Error String)
